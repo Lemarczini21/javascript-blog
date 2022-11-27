@@ -28,7 +28,10 @@ const optArticleSelector = '.post',
   optTitleSelector = '.post-title',
   optTitleListSelector = '.titles',
   optArticleTagsSelector = '.post-tags .list',
-  optArticleAuthorSelector = '.post-author';
+  optArticleAuthorSelector = '.post-author',
+  optTagsListSelector = '.tags',
+  optCloudClassCount = '5',
+  optCloudClassPrefix = 'tag-size-';
 
 /* 6.4. Generowanie listy tytułów */
 function generateTitleLinks(customSelector = '') {
@@ -69,9 +72,40 @@ function generateTitleLinks(customSelector = '') {
 }
 generateTitleLinks();
 
+//7.3 Znalezienie skrajnych liczb wystąpień
+
+function calculateTagsParams(tags) {
+  const params = { max: 0, min: 999999 };
+  for (let tag in tags) {
+    //console.log(tag + ' is used ' + tags[tag] + ' times'); //ASK dlaczego tags[tag] zwraca typ liczby?
+    if (tags[tag] > params.max) {
+      params.max = tags[tag];
+    }
+    for (let tag in tags) {
+      if (tags[tag] < params.min) {
+        params.min = tags[tag];
+      }
+    }
+  }
+  return params;
+}
+calculateTagsParams();
 /* 7.2. Dodajemy tagi do artykułu */
+//console.log(tag + 'is used' + tags[tag] + 'times');
+
+// Wybranie klasy dla tagu
+
+function calculateTagClass(count, params) {
+  const normalizedCount = count - params.min;
+  const normalizedMax = params.max - params.min;
+  const percentage = normalizedCount / normalizedMax;
+  const classNumber = Math.floor(percentage * (optCloudClassCount - 1) + 1);
+  return optCloudClassPrefix + classNumber;
+}
 
 function generateTags() {
+  /* [NEW] create a new variable allTags with an empty object */
+  let allTags = {};
   /* find all articles */
   const articles = document.querySelectorAll(optArticleSelector);
   //onsole.log(articles);
@@ -91,16 +125,52 @@ function generateTags() {
     for (let tag of tagsArray) {
       /* generate HTML of the link */
       const linkHTML = '<li><a href="#tag-' + tag + '">' + tag + '</a><li>';
+      //console.log(linkHTML);
       /* add generated code to html variable */
-
       html = html + linkHTML;
+      /* [NEW] check if this link is NOT already in allTags */
+      if (!allTags[tag]) {
+        /* [NEW] add generated code to allTags array */
+        allTags[tag] = 1;
+      } else {
+        allTags[tag]++;
+      }
       /* END LOOP: for each tag */
     } // <-- koniec petli for for(let tag of tagsArray){ linia 101
+
     /* insert HTML of all the links into the tags wrapper */
     tagsWrapperList.innerHTML = html;
     /* END LOOP: for every article: */
   } // <-- koniec petli for (let article of articles){ start linia 87
+
+  /* [NEW] find list of tags in right column */
+  const tagList = document.querySelector(optTagsListSelector);
+  // Znalezienie skrajnych liczb wystąpień
+  const tagsParams = calculateTagsParams(allTags);
+  //console.log('tagsParams:', tagsParams);
+  /* [NEW] create variable for all links HTML code */
+  let allTagsHTML = '';
+  /* [NEW] START LOOP: for each tag in allTags: */
+  for (let tag in allTags) {
+    const tagLinkHTML =
+      '<li><a class="' +
+      calculateTagClass(allTags[tag], tagsParams) +
+      '" href="#tag-' +
+      tag +
+      '">' +
+      tag +
+      '</a></li>'; //
+    console.log('tagLinkHTML:', tagLinkHTML);
+    /* [NEW] generate code of a link and add it to allTagsHTML */
+    allTagsHTML += tagLinkHTML;
+    //'<li><a href="#tag-' + tag + '">' + tag + ' (' + allTags[tag] + ') ';
+  }
+  /* [NEW] END LOOP: for each tag in allTags: */
+
+  /*[NEW] add HTML from allTagsHTML to tagList */
+  tagList.innerHTML = allTagsHTML;
 }
+
 generateTags();
 
 //ZADANIE Dodajemy akcję po kliknięciu w tag
@@ -193,4 +263,4 @@ function addClickListenersToAuthor() {
   }
 }
 addClickListenersToAuthor();
-console.log('Listeners added');
+//console.log('Listeners added');
