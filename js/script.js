@@ -31,7 +31,8 @@ const optArticleSelector = '.post',
   optArticleAuthorSelector = '.post-author',
   optTagsListSelector = '.tags',
   optCloudClassCount = '5',
-  optCloudClassPrefix = 'tag-size-';
+  optCloudClassPrefix = 'tag-size-',
+  optAuthorsListSelector = '.authors';
 
 /* 6.4. Generowanie listy tytułów */
 function generateTitleLinks(customSelector = '') {
@@ -108,7 +109,7 @@ function generateTags() {
   let allTags = {};
   /* find all articles */
   const articles = document.querySelectorAll(optArticleSelector);
-  //onsole.log(articles);
+  //console.log(articles);
   /* START LOOP: for every article: */
   for (let article of articles) {
     /* find tags wrapper */
@@ -160,7 +161,7 @@ function generateTags() {
       '">' +
       tag +
       '</a></li>'; //
-    console.log('tagLinkHTML:', tagLinkHTML);
+    // console.log('tagLinkHTML:', tagLinkHTML);
     /* [NEW] generate code of a link and add it to allTagsHTML */
     allTagsHTML += tagLinkHTML;
     //'<li><a href="#tag-' + tag + '">' + tag + ' (' + allTags[tag] + ') ';
@@ -227,40 +228,61 @@ addClickListenersToTags();
 
 //FUNCTION generateAuthors
 function generateAuthors() {
+  let allAuthors = {};
   const articles = document.querySelectorAll(optArticleSelector);
   for (let article of articles) {
     const authorWrapper = article.querySelector(optArticleAuthorSelector);
     const author = article.getAttribute('data-author');
     const linkHTML = '<a href="#author-' + author + '">' + author + '</a>';
-    //console.log(linkHTML);
+    if (!allAuthors[author]) {
+      allAuthors[author] = 1;
+    } else {
+      allAuthors[author]++;
+    }
     authorWrapper.innerHTML = linkHTML;
   }
+
+  // Dodanie linkow autorow
+  const authorList = document.querySelector(optAuthorsListSelector);
+  let allAuthorsHTML = '';
+  for (let author in allAuthors) {
+    const authorLinkHTML =
+      '<li><a href="#author-' +
+      author +
+      '">' +
+      author +
+      ' (' +
+      allAuthors[author] +
+      ')<a/></li>';
+    allAuthorsHTML += authorLinkHTML;
+  }
+  console.log(allAuthorsHTML);
+  authorList.innerHTML = allAuthorsHTML;
 }
-generateAuthors(); // DO DOKOŃCZENIA
+generateAuthors();
 
 const authorClickHandler = function (event) {
   event.preventDefault();
   const clickedElement = this;
   const href = clickedElement.getAttribute('href');
-  console.log(href);
   const author = href.replace('#author-', '');
-  console.log(author);
   // ASK po co ustawiana jest klasa active?
+  //ASK dlaczego po kliknieciu w link nie wyswietla sie lsita artykulow tego autora "caanot read propertied of null"
   const authorsActive = document.querySelectorAll('a.active[href="#author-');
   for (let authorActive of authorsActive) {
     authorActive.classList.remove('active');
   }
-  const allAuthorsLink = document.querySelectorAll('a[href="' + href + '"]');
+  const allAuthorsLink = document.querySelectorAll('a[href~="' + href + '"]');
   for (let authorLink of allAuthorsLink) {
     authorLink.classList.add('active');
   }
-  generateTitleLinks('[data-author="' + author + '"]');
+  generateTitleLinks('[data-author~="' + author + '"]');
 };
 function addClickListenersToAuthor() {
-  const authors = document.querySelectorAll('.post-author a');
+  const authors = document.querySelectorAll('.authors');
   for (let author of authors) {
     author.addEventListener('click', authorClickHandler);
   }
 }
 addClickListenersToAuthor();
-//console.log('Listeners added');
+console.log('Listeners added');
