@@ -3,14 +3,9 @@
 /*
 Komentarz mentora:
 Apilkacja nie działa poprawnie:
-
 1. Po uruchomieniu aplikacji pierwsze kliknienie w link do dowolengo artykulu powoduje co prawda wyswietlenie tego artykulu ale lista artykulow jest pusta.
-
 2. Klikniecie w autora pod artykułem nie działa (nie pojawia sie lista linkow do artykulow tego autora)
-
 3. Klikniecie w link autora w chmurze (po prawej stronie) rowniez nie dziala
-
-
 */
 
 //HANDLEBARS
@@ -27,6 +22,9 @@ const templates = {
   ),
   tagCloudLink: Handlebars.compile(
     document.querySelector('#template-tag-cloud-link').innerHTML
+  ),
+  authorsListLink: Handlebars.compile(
+    document.querySelector('#template-authors-list-link').innerHTML
   ),
 };
 
@@ -114,7 +112,6 @@ generateTitleLinks();
 function calculateTagsParams(tags) {
   const params = { max: 0, min: 999999 };
   for (let tag in tags) {
-    //console.log(tag + ' is used ' + tags[tag] + ' times'); //ASK dlaczego tags[tag] zwraca typ liczby?
     if (tags[tag] > params.max) {
       params.max = tags[tag];
     }
@@ -128,8 +125,6 @@ function calculateTagsParams(tags) {
 }
 calculateTagsParams();
 /* 7.2. Dodajemy tagi do artykułu */
-//console.log(tag + 'is used' + tags[tag] + 'times');
-
 // Wybranie klasy dla tagu
 
 function calculateTagClass(count, params) {
@@ -145,7 +140,6 @@ function generateTags() {
   let allTags = {};
   /* find all articles */
   const articles = document.querySelectorAll(opts.articleSelector);
-  //console.log(articles);
   /* START LOOP: for every article: */
   for (let article of articles) {
     /* find tags wrapper */
@@ -154,18 +148,11 @@ function generateTags() {
     let html = '';
     /* get tags from data-tags attribute */
     const tagsSelector = article.getAttribute('data-tags');
-    //console.log(tagsSelector);
     /* split tags into array */
     const tagsArray = tagsSelector.split(' ');
-    //console.log(tagsArray);
     /* START LOOP: for each tag */
     for (let tag of tagsArray) {
       /* generate HTML of the link */
-
-      //        <script id="template-tag-link" type="text/x-handlebars-template">
-      //   <li><a href="#tag-{{ tag }}">{{ tag }}</a></li>
-      // </script>
-
       const linkHTMLData = { tag: tag };
       const linkHTML = templates.tagLink(linkHTMLData);
       //const linkHTML = '<li><a href="#tag-' + tag + '">' + tag + '</a><li>';
@@ -190,10 +177,7 @@ function generateTags() {
   const tagList = document.querySelector(opts.tagsListSelector);
   // Znalezienie skrajnych liczb wystąpień
   const tagsParams = calculateTagsParams(allTags);
-  //console.log('tagsParams:', tagsParams);
   /* [NEW] create variable for all links HTML code */
-
-  // let AllTagsHTML = '';
   const allTagsData = { tags: [] };
   /* [NEW] START LOOP: for each tag in allTags: */
   for (let tag in allTags) {
@@ -297,23 +281,26 @@ function generateAuthors() {
 
   // Dodanie linkow autorow
   const authorList = document.querySelector(opts.authorsListSelector);
-  let allAuthorsHTML = '';
-
-  //const allAuthorsData =
+  // let allAuthorsHTML = '';
+  const allAuthorsData = { authors: [] };
 
   for (let author in allAuthors) {
-    const authorLinkHTML =
-      '<li><a href="#author-' +
-      author +
-      '">' +
-      author +
-      ' (' +
-      allAuthors[author] +
-      ')<a/></li>';
-    allAuthorsHTML += authorLinkHTML;
+    allAuthorsData.authors.push({
+      author: author,
+      count: allAuthors[author],
+    });
+    // const authorLinkHTML =
+    //   '<li><a href="#author-' +
+    //   author +
+    //   '">' +
+    //   author +
+    //   ' (' +
+    //   allAuthors[author] +
+    //   ')<a/></li>';
+    // allAuthorsHTML += authorLinkHTML;
   }
   //console.log(allAuthorsHTML);
-  authorList.innerHTML = allAuthorsHTML;
+  authorList.innerHTML = templates.authorsListLink(allAuthorsData);
 }
 generateAuthors();
 
