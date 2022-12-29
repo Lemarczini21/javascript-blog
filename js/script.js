@@ -137,7 +137,7 @@ function calculateTagClass(count, params) {
 
 function generateTags() {
   /* [NEW] create a new variable allTags with an empty object */
-  let allTags = {};
+  const allTags = {};
   /* find all articles */
   const articles = document.querySelectorAll(opts.articleSelector);
   /* START LOOP: for every article: */
@@ -255,7 +255,7 @@ addClickListenersToTags();
 
 //FUNCTION generateAuthors
 function generateAuthors() {
-  let allAuthors = {};
+  const allAuthors = {};
   const articles = document.querySelectorAll(opts.articleSelector);
   for (let article of articles) {
     const authorWrapper = article.querySelector(opts.articleAuthorSelector);
